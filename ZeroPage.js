@@ -180,6 +180,10 @@ class ZeroPage {
 
 	/****************************** Site control ******************************/
 	getPrivateKey(file) {
+		if(!this.auth) {
+			return Promise.resolve("stored");
+		}
+
 		let auth = this.auth.getAuth();
 		return this.cmd("fileRules", [file])
 			.then(rules => {
@@ -226,7 +230,11 @@ class ZeroPage {
 				);
 			})
 			.then(res => {
-				if(res === "ok") {
+				if(
+					res === "ok" ||
+					res.error === "Port not opened." ||
+					res.error === "Content publish failed."
+				) {
 					return Promise.resolve(file);
 				} else {
 					return Promise.reject(res);
@@ -283,7 +291,7 @@ class ZeroPage {
 	isFunctionCalledInside(search) { // Returns true if <search> function called function (that called isFunctionCalledInside)
 		let caller = arguments.callee.caller;
 		while(caller) {
-			if(caller == selfFunc) {
+			if(caller == search) {
 				return true;
 			}
 			caller = caller.caller;
